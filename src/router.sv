@@ -14,6 +14,7 @@ module router#(
     input logic [FLIT_WIDTH-1:0] south_din,
     input logic [FLIT_WIDTH-1:0] up_din,
     input logic [FLIT_WIDTH-1:0] down_din,
+    input logic [FLIT_WIDTH-1:0] local_din,
 
     output logic west_ready,
     output logic north_ready,
@@ -21,6 +22,7 @@ module router#(
     output logic south_ready,
     output logic up_ready,
     output logic down_ready,
+    output logic local_ready,
 
     output logic [FLIT_WIDTH-1:0] west_dout,
     output logic [FLIT_WIDTH-1:0] north_dout,
@@ -28,6 +30,7 @@ module router#(
     output logic [FLIT_WIDTH-1:0] south_dout,
     output logic [FLIT_WIDTH-1:0] up_dout,
     output logic [FLIT_WIDTH-1:0] down_dout
+    output logic [FLIT_WIDTH-1:0] local_dout
 
     input logic west_dest_ready,
     input logic north_dest_ready,
@@ -35,6 +38,7 @@ module router#(
     input logic south_dest_ready,
     input logic up_dest_ready,
     input logic down_dest_ready,
+    input logic local_dest_ready,
 
 );
 

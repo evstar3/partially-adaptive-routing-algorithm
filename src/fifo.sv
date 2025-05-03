@@ -12,29 +12,31 @@ module fifo#(
     input logic pop,
     input logic [DATA_WIDTH-1:0] din,
 
-    output logic [DATA_WIDTH-1:0] dout;
+    output logic [DATA_WIDTH-1:0] dout,
     output logic empty,
     output logic full
 );
 
 typedef enum logic [1:0] {
-    EMPTY = 2'd0,
-    FULL  = 2'd1,
+    EMPTY = 2'd1,
+    FULL  = 2'd2
 } state_t;
 
 state_t [1:0] state;
+logic [DATA_WIDTH-1:0] regfile [DEPTH-1:0];
+logic [ADDR_WIDTH:0] read_head, write_head;
+
 always_comb begin
-    if (n_elements == 0)
-        state = EMPTY;
-    else if (n_elements == DEPTH)
-        state = FULL;
+    state = '0;
+    if (read_head[ADDR_WIDTH-1:0] == write_head[ADDR_WIDTH-1:0])
+        if (read_head[ADDR_WIDTH] ^ write_head[ADDR_WIDTH])
+            state = FULL;
+        else
+            state = EMPTY;
 end
 
-logic [DATA_WIDTH-1:0] regfile [DEPTH-1:0];
-logic [ADDR_WIDTH-1:0] n_elements, read_head, write_head;
 always_ff @(posedge clk or posedge reset) begin
     if (reset) begin
-        n_elements <= '0;
         read_head <= '0;
         write_head <= '0;
         for (int i = 0; i < DEPTH; i++)
@@ -44,32 +46,28 @@ always_ff @(posedge clk or posedge reset) begin
             EMPTY: begin
                 if (push) begin
                     write_head <= write_head + 1;
-                    regfile[write_head] <= din;
-                    n_elements <= n_elements + 1;
+                    regfile[write_head[ADDR_WIDTH-1:0]] <= din;
                 end
             end
             FULL: begin
-                if (pop) begin
+                if (push & pop) begin
                     read_head <= read_head + 1;
-                    if (push) begin
-                        write_head <= write_head + 1;
-                        regfile[write_head] <= din;
-                    end else
-                        n_elements <= n_elements - 1;
+                    write_head <= write_head + 1;
+                    regfile[write_head[ADDR_WIDTH-1:0]] <= din;
+                end else if (~push & pop) begin
+                    read_head <= read_head + 1;
                 end
             end
             default: begin
                 if (push & pop) begin
                     read_head <= read_head + 1;
                     write_head <= write_head + 1;
-                    regfile[write_head] <= din;
+                    regfile[write_head[ADDR_WIDTH-1:0]] <= din;
                 end else if (push & ~pop) begin
                     write_head <= write_head + 1;
-                    regfile[write_head] <= din;
-                    n_elements <= n_elements + 1;
+                    regfile[write_head[ADDR_WIDTH-1:0]] <= din;
                 end else if (~push & pop) begin
                     read_head <= read_head + 1;
-                    n_elements <= n_elements - 1;
                 end
             end
         endcase
@@ -78,9 +76,6 @@ end
 
 assign empty = state == EMPTY;
 assign full  = state == FULL;
-assign dout = regfile[read_head];
+assign dout  = regfile[read_head[ADDR_WIDTH-1:0]];
 
 endmodule
-
-
-
