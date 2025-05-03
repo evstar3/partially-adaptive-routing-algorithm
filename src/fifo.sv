@@ -1,9 +1,6 @@
 module fifo#(
-    // external parameters
-    parameter int ADDR_WIDTH = 3,
-    parameter int DATA_WIDTH = 64,
-    // internal parameters
-    parameter int DEPTH = 2 ** ADDR_WIDTH
+    parameter int DEPTH_BITS = 3,
+    parameter int DATA_WIDTH = 32
 ) (
     input logic clk,
     input logic reset,
@@ -17,6 +14,8 @@ module fifo#(
     output logic full
 );
 
+parameter int DEPTH = 2 ** DEPTH_BITS;
+
 typedef enum logic [1:0] {
     EMPTY = 2'd1,
     FULL  = 2'd2
@@ -24,12 +23,12 @@ typedef enum logic [1:0] {
 
 state_t [1:0] state;
 logic [DATA_WIDTH-1:0] regfile [DEPTH-1:0];
-logic [ADDR_WIDTH:0] read_head, write_head;
+logic [DEPTH_BITS:0] read_head, write_head;
 
 always_comb begin
     state = '0;
-    if (read_head[ADDR_WIDTH-1:0] == write_head[ADDR_WIDTH-1:0])
-        if (read_head[ADDR_WIDTH] ^ write_head[ADDR_WIDTH])
+    if (read_head[DEPTH_BITS-1:0] == write_head[DEPTH_BITS-1:0])
+        if (read_head[DEPTH_BITS] ^ write_head[DEPTH_BITS])
             state = FULL;
         else
             state = EMPTY;
@@ -46,14 +45,14 @@ always_ff @(posedge clk or posedge reset) begin
             EMPTY: begin
                 if (push) begin
                     write_head <= write_head + 1;
-                    regfile[write_head[ADDR_WIDTH-1:0]] <= din;
+                    regfile[write_head[DEPTH_BITS-1:0]] <= din;
                 end
             end
             FULL: begin
                 if (push & pop) begin
                     read_head <= read_head + 1;
                     write_head <= write_head + 1;
-                    regfile[write_head[ADDR_WIDTH-1:0]] <= din;
+                    regfile[write_head[DEPTH_BITS-1:0]] <= din;
                 end else if (~push & pop) begin
                     read_head <= read_head + 1;
                 end
@@ -62,10 +61,10 @@ always_ff @(posedge clk or posedge reset) begin
                 if (push & pop) begin
                     read_head <= read_head + 1;
                     write_head <= write_head + 1;
-                    regfile[write_head[ADDR_WIDTH-1:0]] <= din;
+                    regfile[write_head[DEPTH_BITS-1:0]] <= din;
                 end else if (push & ~pop) begin
                     write_head <= write_head + 1;
-                    regfile[write_head[ADDR_WIDTH-1:0]] <= din;
+                    regfile[write_head[DEPTH_BITS-1:0]] <= din;
                 end else if (~push & pop) begin
                     read_head <= read_head + 1;
                 end
@@ -76,6 +75,6 @@ end
 
 assign empty = state == EMPTY;
 assign full  = state == FULL;
-assign dout  = regfile[read_head[ADDR_WIDTH-1:0]];
+assign dout  = regfile[read_head[DEPTH_BITS-1:0]];
 
 endmodule

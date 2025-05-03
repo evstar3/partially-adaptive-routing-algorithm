@@ -1,8 +1,8 @@
 module fifo_tb;
 
-parameter int ADDR_WIDTH = 3;
+parameter int DEPTH_BITS = 3;
 parameter int DATA_WIDTH = 32;
-parameter int DEPTH = 2 ** ADDR_WIDTH;
+parameter int DEPTH = 2 ** DEPTH_BITS;
 
 logic clk, reset;
 logic push, pop;
@@ -10,7 +10,7 @@ logic empty, full;
 logic [DATA_WIDTH-1:0] din, dout;
 
 fifo #(
-    .ADDR_WIDTH(ADDR_WIDTH),
+    .DEPTH_BITS(DEPTH_BITS),
     .DATA_WIDTH(DATA_WIDTH)
 ) dut (
     .clk(clk),
