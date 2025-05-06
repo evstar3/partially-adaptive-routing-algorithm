@@ -1,10 +1,9 @@
 module multilane_fifo_tb;
 
 parameter int LANES = 2;
-parameter int DEPTH_BITS = 2;
+parameter int DEPTH = 5;
 parameter int DATA_WIDTH = 32;
 parameter int LANE_BITS = $clog2(LANES);
-parameter int DEPTH = 2 ** DEPTH_BITS;
 
 logic clk, reset;
 logic [LANE_BITS-1:0] push_lane, pop_lane;
@@ -14,7 +13,7 @@ logic [DATA_WIDTH-1:0] din, dout;
 
 multilane_fifo #(
     .LANES(LANES),
-    .DEPTH_BITS(DEPTH_BITS),
+    .DEPTH(DEPTH),
     .DATA_WIDTH(DATA_WIDTH)
 ) dut (
     .clk(clk),

@@ -1,8 +1,7 @@
 module fifo_tb;
 
-parameter int DEPTH_BITS = 3;
+parameter int DEPTH = 5;
 parameter int DATA_WIDTH = 32;
-parameter int DEPTH = 2 ** DEPTH_BITS;
 
 logic clk, reset;
 logic push, pop;
@@ -10,7 +9,7 @@ logic empty, full;
 logic [DATA_WIDTH-1:0] din, dout;
 
 fifo #(
-    .DEPTH_BITS(DEPTH_BITS),
+    .DEPTH(DEPTH),
     .DATA_WIDTH(DATA_WIDTH)
 ) dut (
     .clk(clk),
@@ -41,7 +40,7 @@ initial begin
     for (i = 0; i < DEPTH; i++) begin
         push = 1'b1;
         pop = 1'b0;
-        din = i;
+        din = i + 1;
         assert(full == 1'b0);
         #10;
         assert(empty == 1'b0);
@@ -51,15 +50,15 @@ initial begin
 
     push = 1'b1;
     pop = 1'b1;
-    din = 32'd8;
+    din = DEPTH + 1;
     #10;
     assert(full == 1'b1);
-    assert(dout == 32'd1);
+    assert(dout == 32'd2);
 
     for (i = 0; i < DEPTH; i++) begin
         push = 1'b0;
         pop = 1'b1;
-        assert(dout == i + 1);
+        assert(dout == i + 2);
         assert(empty == 1'b0);
         #10;
     end

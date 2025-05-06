@@ -1,6 +1,6 @@
 module multilane_fifo#(
+    parameter int DEPTH = 5,
     parameter int LANES = 2,
-    parameter int DEPTH_BITS = 3,
     parameter int DATA_WIDTH = 32
 ) (
     input logic clk,
@@ -19,8 +19,6 @@ module multilane_fifo#(
     output logic [LANES-1:0] full
 );
 
-parameter int DEPTH = 2 ** DEPTH_BITS;
-
 logic [LANES-1:0] push_one_hot, pop_one_hot;
 assign push_one_hot = {{LANES-1{1'b0}}, push} << push_lane;
 assign pop_one_hot  = {{LANES-1{1'b0}}, pop}  << pop_lane;
@@ -31,7 +29,7 @@ genvar i;
 generate
     for (i = 0; i < LANES; i++) begin
         fifo #(
-            .DEPTH_BITS(DEPTH_BITS),
+            .DEPTH(DEPTH),
             .DATA_WIDTH(DATA_WIDTH)
         ) f0 (
             .clk(clk),

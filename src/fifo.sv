@@ -71,13 +71,16 @@ always_ff @(posedge clk or posedge reset) begin
         if (do_read)
             read_head <= read_head_next;
 
-        if (do_write)
+        if (do_write) begin
+            regfile[write_head] <= din;
             write_head <= write_head_next;
+        end
 
         if (do_read & ~do_write)
             n_elements = n_elements - 1;
         else if (~do_read & do_write)
             n_elements = n_elements + 1;
+    end
 end
 
 assign empty = state == EMPTY;
@@ -85,3 +88,4 @@ assign full  = state == FULL;
 assign dout  = regfile[read_head];
 
 endmodule
+
