@@ -1,17 +1,14 @@
 module fifo#(
-    parameter int DEPTH = 3,
-    parameter int DATA_WIDTH = 32
+    parameter int DEPTH,
+    parameter int DATA_WIDTH
 ) (
     input logic clk,
     input logic reset,
-
     input logic push,
     input logic pop,
     input logic [DATA_WIDTH-1:0] din,
-
     output logic [DATA_WIDTH-1:0] dout,
-    output logic empty,
-    output logic full
+    output logic [$clog2(DEPTH):0] n_free
 );
 
 parameter int DEPTH_BITS = $clog2(DEPTH);
@@ -23,13 +20,12 @@ typedef enum logic [1:0] {
 
 state_t [1:0] state;
 
-logic [DEPTH_BITS:0] n_elements;
 always_comb begin
     state = '0;
-    if (n_elements == 0)
-        state = EMPTY;
-    else if (n_elements == DEPTH)
+    if (n_free == 0)
         state = FULL;
+    else if (n_free == DEPTH)
+        state = EMPTY;
 end
 
 logic do_read, do_write;
@@ -64,7 +60,7 @@ always_ff @(posedge clk or posedge reset) begin
     if (reset) begin
         read_head <= '0;
         write_head <= '0;
-        n_elements <= '0;
+        n_free <= DEPTH;
         for (int i = 0; i < DEPTH; i++)
             regfile[i] <= '0;
     end else begin
@@ -77,9 +73,9 @@ always_ff @(posedge clk or posedge reset) begin
         end
 
         if (do_read & ~do_write)
-            n_elements = n_elements - 1;
+            n_free <= n_free + 1;
         else if (~do_read & do_write)
-            n_elements = n_elements + 1;
+            n_free <= n_free - 1;
     end
 end
 
