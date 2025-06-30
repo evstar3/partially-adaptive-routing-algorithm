@@ -2,6 +2,7 @@
 
 import subprocess
 import shutil
+import sys
 
 from multiprocessing import Pool
 from itertools import product
@@ -11,10 +12,10 @@ from time import time
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 
 TRAFFIC = ['uniform_random', 'shuffle']
-FAULT_RATES = [i / 100 for i in range(0, 51, 5)]
+FAULT_RATES = [i / 100 for i in range(0, 16, 1)]
 NUM_ROWS = [4, 8]
 INJECTION_RATES = [i / 1000 for i in range(20, 301, 10)]
-RUNS = 4
+RUNS = 5
 
 GEM5_EXE = Path('../gem5/build/NULL/gem5.debug')
 CONFIG = Path('../gem5/configs/example/faulty_garnet_synth_traffic.py')
@@ -86,10 +87,18 @@ def main():
             resultdir = get_resultdir(*config_info)
 
             if resultdir.exists():
-                print(f'DONE: {resultdir} 0s (exists)', flush=True)
                 continue
 
             yield config_info
+
+    jobs = 0
+    for config in configs():
+        jobs += 1
+
+    print(f"{sys.argv[0]}: launch {jobs} jobs?", end=' ')
+    response = input()
+    if response.lower() not in ('y', 'yes'):
+        sys.exit(0)
 
     with Pool(processes=args.jobs) as pool:
         pool.starmap(run_job, configs())
