@@ -15,6 +15,7 @@ module bist_receiver#(
 
 logic [31:0] cases;
 logic [31:0] rng_out;
+logic [TEST_CHANNELS-1:0] expected_input;
 logic test_complete;
 assign test_complete = cases == TEST_CASES;
 assign ready = failed | test_complete;
@@ -30,11 +31,13 @@ lfsr#(
 always_ff @(posedge clk or posedge reset) begin
     if (reset) begin
         cases <= '0;
+        expected_input <= '0;
         failed <= '0;
     end else begin
         if (~ready) begin
             cases <= cases + 32'b1;
-            failed <= failed | (input_channels != rng_out);
+            expected_input <= (expected_input << 32) | rng_out;
+            failed <= failed | (input_channels != expected_input);
         end
     end
 end

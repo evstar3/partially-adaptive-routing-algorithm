@@ -4,7 +4,6 @@ parameter int TEST_CHANNELS = 70;
 parameter SEED = 32'hdeadbeef;
 parameter int TEST_CASES = 1000;
 
-
 logic clk;
 logic reset; 
 logic [TEST_CHANNELS-1:0] input_channels;
