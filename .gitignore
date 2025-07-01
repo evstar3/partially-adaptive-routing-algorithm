@@ -5,3 +5,4 @@ shuffle
 uniform_random
 tornado
 genout.txt
+.venv

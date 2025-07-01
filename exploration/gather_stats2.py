@@ -9,7 +9,8 @@ import sys
 def main():
     configs = set()
     latencies = defaultdict(lambda: defaultdict(list))
-    latency_pattern = re.compile("system.ruby.network.packets_received::total".replace('.', r'\.'))
+    #pattern = re.compile("system.ruby.network.packets_received::total".replace('.', r'\.'))
+    pattern = re.compile("system.ruby.network.average_packet_latency".replace('.', r'\.'))
 
     data_dir = Path(sys.argv[1])
     for path in data_dir.rglob('stats.txt'):
@@ -21,7 +22,7 @@ def main():
             lines = fp.readlines()
 
         for line in lines:
-            if re.match(latency_pattern, line):
+            if re.match(pattern, line):
                 configs.add((num_rows, fault_rate))
                 latencies[injection_rate][(num_rows, fault_rate)].append(float(line.split()[1]))
                 break
