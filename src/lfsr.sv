@@ -1,5 +1,5 @@
-module LFSR#(
-    parameter SEED
+module lfsr#(
+    parameter SEED = 32'hdeadbeef
 ) (
     input  logic        clk,
     input  logic        reset,
@@ -17,5 +17,4 @@ always_ff @(posedge reset or posedge clk) begin
     end
 end
 
-endmodule;
-
+endmodule

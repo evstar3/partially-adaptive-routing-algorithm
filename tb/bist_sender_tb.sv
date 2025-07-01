@@ -23,8 +23,9 @@ bist_sender#(
     .output_channels(output_channels)
 );
 
-forever
-    #5 clk = ~clk;
+always begin
+    #5; clk = ~clk;
+end
 
 initial begin
     clk = 1'b0;
@@ -36,9 +37,12 @@ initial begin
     #5;
     reset = 1'b0;
 
-    while (~ready);
+    while (~ready)
+        #5;
 
     assert(output_channels == input_channels);
+
+    $finish;
 end
 
-endmodule;
+endmodule

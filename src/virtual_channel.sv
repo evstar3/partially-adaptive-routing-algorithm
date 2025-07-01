@@ -1,7 +1,7 @@
 module virtual_channel#(
-    parameter int DEPTH,
-    parameter int DATA_WIDTH,
-    parameter int VIRTUAL_CHANNELS,
+    parameter int DEPTH = 5,
+    parameter int DATA_WIDTH = 32,
+    parameter int VIRTUAL_CHANNELS = 2,
 
     // internal parameters
     parameter int VC_BITS = $clog2(VIRTUAL_CHANNELS),
@@ -74,7 +74,7 @@ always_ff @(posedge clk or posedge reset) begin
             route_out <= route_in;
 
         if (state == AWAITING_VC)
-            vc_out <= vc_in,
+            vc_out <= vc_in;
 
         state <= next_state;
     end

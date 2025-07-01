@@ -1,7 +1,7 @@
 module bist_sender#(
-    parameter int TEST_CHANNELS,
-    parameter SEED,
-    parameter int TEST_CASES
+    parameter int TEST_CHANNELS = 70,
+    parameter SEED = 32'hdeadbeef,
+    parameter int TEST_CASES = 1000
 ) (
     input  logic clk,
     input  logic reset,
@@ -41,7 +41,7 @@ always_comb begin
     if (ready)
         output_channels = input_channels;
     else
-        output_channels = test_channels;
+        output_channels = test_output;
 end
 
-endmodule;
+endmodule

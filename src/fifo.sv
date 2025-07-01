@@ -1,6 +1,6 @@
 module fifo#(
-    parameter int DEPTH,
-    parameter int DATA_WIDTH
+    parameter int DEPTH = 5,
+    parameter int DATA_WIDTH = 32
 ) (
     input logic clk,
     input logic reset,

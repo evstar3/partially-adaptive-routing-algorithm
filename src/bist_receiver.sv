@@ -1,7 +1,7 @@
 module bist_receiver#(
-    parameter int TEST_CHANNELS,
-    parameter SEED,
-    parameter int TEST_CASES
+    parameter int TEST_CHANNELS = 70,
+    parameter SEED = 32'hdeadbeef,
+    parameter int TEST_CASES = 1000
 ) (
     input  logic clk,
     input  logic reset,
@@ -40,10 +40,10 @@ always_ff @(posedge clk or posedge reset) begin
 end
 
 always_comb begin
-    if (ready)
+    if (ready & ~failed)
         output_channels = input_channels;
     else
-        output_channels = test_channels;
+        output_channels = 32'b0;
 end
 
-endmodule;
+endmodule
