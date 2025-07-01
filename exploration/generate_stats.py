@@ -27,7 +27,7 @@ def run_job(traffic, fault_rate, num_rows, injection_rate, run):
     resultdir = get_resultdir(traffic, fault_rate, num_rows, injection_rate, run)
 
     with TemporaryDirectory() as rundir:
-        print(f'START: {resultdir}')
+        print(f'[ START ] {resultdir}', flush=True)
         starttime = time()
         subprocess.run([
             GEM5_EXE,
@@ -64,7 +64,7 @@ def run_job(traffic, fault_rate, num_rows, injection_rate, run):
 
 
         shutil.move(tempdir.name, resultdir)
-        print(f'DONE: {resultdir} {endtime - starttime:.3f}s', flush=True)
+        print(f'[ DONE ] {resultdir} {endtime - starttime:.3f}s', flush=True)
 
 def main():
     assert GEM5_EXE.exists()
@@ -78,6 +78,11 @@ def main():
         type=int,
         default=1,
         help='Number of parallel processes'
+    )
+    parser.add_argument(
+        '-f', '--force',
+        action="store_true",
+        help='Do not ask for confirmation'
     )
 
     args = parser.parse_args()
@@ -95,15 +100,17 @@ def main():
     for config in configs():
         jobs += 1
 
-    print(f"{sys.argv[0]}: launch {jobs} jobs?", end=' ')
-    response = input()
-    if response.lower() not in ('y', 'yes'):
-        sys.exit(0)
+    print(f'{sys.argv[0]}: need to run {jobs} jobs')
+    if (not args.force):
+        print(f'{sys.argv[0]}: continue?', end=' ')
+        response = input()
+        if response.lower() not in ('y', 'yes'):
+            sys.exit(0)
 
     with Pool(processes=args.jobs) as pool:
         pool.starmap(run_job, configs())
 
-    print('! COMPLETE !')
+    print('[ COMPLETE ]')
 
 if __name__ == '__main__':
     main()
