@@ -11,11 +11,11 @@ from tempfile import TemporaryDirectory
 from time import time
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 
-TRAFFIC = ['uniform_random', 'shuffle']
+TRAFFIC = ['uniform_random']
 FAULT_RATES = [i / 100 for i in range(0, 16, 1)]
 NUM_ROWS = [4, 8]
-INJECTION_RATES = [i / 1000 for i in range(20, 301, 10)]
-RUNS = 5
+INJECTION_RATES = [i / 100 for i in range(2, 31, 1)]
+RUNS = 20
 
 GEM5_EXE = Path('../gem5/build/NULL/gem5.debug')
 CONFIG = Path('../gem5/configs/example/faulty_garnet_synth_traffic.py')
