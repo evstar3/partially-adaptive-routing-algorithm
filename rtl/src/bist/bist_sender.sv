@@ -17,7 +17,7 @@ logic [31:0] rng_out;
 logic [TEST_CHANNELS-1:0] test_output;
 assign ready = cases == TEST_CASES;
 
-lfsr#(
+lfsr32#(
     .SEED(SEED)
 ) rng (
     .clk(clk),

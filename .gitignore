@@ -1,6 +1,6 @@
 **/*.swp
-sim/waves.shm
-sim/xrun.key
+waves.shm
+xrun.key
 shuffle
 uniform_random
 tornado

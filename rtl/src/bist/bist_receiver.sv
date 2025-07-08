@@ -20,7 +20,7 @@ logic test_complete;
 assign test_complete = cases == TEST_CASES;
 assign ready = failed | test_complete;
 
-lfsr#(
+lfsr32#(
     .SEED(SEED)
 ) rng (
     .clk(clk),

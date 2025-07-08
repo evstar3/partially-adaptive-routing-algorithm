@@ -1,4 +1,4 @@
-module lfsr#(
+module lfsr32#(
     parameter SEED = 32'hdeadbeef
 ) (
     input  logic        clk,
