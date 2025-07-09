@@ -17,7 +17,7 @@ NUM_ROWS = [4, 8]
 INJECTION_RATES = [i / 100 for i in range(2, 31, 1)]
 RUNS = 20
 
-GEM5_EXE = Path('../gem5/build/NULL/gem5.debug')
+GEM5_OPT_EXE = Path('../gem5/build/NULL/gem5.opt')
 CONFIG = Path('../gem5/configs/example/faulty_garnet_synth_traffic.py')
 
 def get_resultdir(traffic, fault_rate, num_rows, injection_rate, run):
@@ -30,7 +30,7 @@ def run_job(traffic, fault_rate, num_rows, injection_rate, run):
         print(f'[ START ] {resultdir}', flush=True)
         starttime = time()
         subprocess.run([
-            GEM5_EXE,
+            GEM5_OPT_EXE,
             f'--outdir={rundir}',
             '--redirect-stdout',
             '--redirect-stderr',
@@ -39,6 +39,7 @@ def run_job(traffic, fault_rate, num_rows, injection_rate, run):
             '--network=garnet',
             '--sim-cycles=1000000',
             '--topology=FaultyMesh_ZXY',
+            '--routing-algorithm=2', # custom
             f'--synthetic={traffic}',
             f'--fault-rate={fault_rate}',
             f'--mesh-rows={num_rows}',
@@ -67,7 +68,7 @@ def run_job(traffic, fault_rate, num_rows, injection_rate, run):
         print(f'[ DONE ] {resultdir} {endtime - starttime:.3f}s', flush=True)
 
 def main():
-    assert GEM5_EXE.exists()
+    assert GEM5_OPT_EXE.exists()
     assert CONFIG.exists()
 
     parser = ArgumentParser(
