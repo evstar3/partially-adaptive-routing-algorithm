@@ -28,9 +28,9 @@ class Config():
     )
 
     def __init__(self, stat_path):
-        self.fault_rate     = float(stat_path.parts[1])
-        self.num_rows       = int(stat_path.parts[2].split('x')[0])
-        self.injection_rate = float(stat_path.parts[3])
+        self.fault_rate              = float(stat_path.parts[1])
+        self.num_rows, self.num_cols = map(int, stat_path.parts[2].split('x'))
+        self.injection_rate          = float(stat_path.parts[3])
 
         with stat_path.open() as fp:
             lines = fp.readlines()
@@ -52,11 +52,11 @@ class Config():
                     break
 
     def csv_header():
-        return ','.join(('fault_rate','num_rows','injection_rate',*Config.StatNames))
+        return ','.join(('fault_rate','num_rows','num_cols','injection_rate',*Config.StatNames))
 
     def to_csv_string(self):
         return ','.join(
-            map(str, [self.fault_rate, self.num_rows, self.injection_rate] + list(self.stats.values()))
+            map(str, [self.fault_rate, self.num_rows, self.num_cols, self.injection_rate] + list(self.stats.values()))
         )
 
 

@@ -13,59 +13,69 @@ from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 
 TRAFFIC = ['uniform_random']
 FAULT_RATES = [i / 100 for i in range(0, 16, 1)]
-NUM_ROWS = [4, 8]
+SIZES = [(4, 4), (8, 8)] # (row, col)
 INJECTION_RATES = [i / 100 for i in range(2, 31, 1)]
 RUNS = 20
 
 GEM5_OPT_EXE = Path('../gem5/build/NULL/gem5.opt')
 CONFIG = Path('../gem5/configs/example/faulty_garnet_synth_traffic.py')
 
-def get_resultdir(traffic, fault_rate, num_rows, injection_rate, run):
-    return Path(traffic, str(fault_rate), f'{num_rows}x{num_rows}', str(injection_rate), str(run))
+def get_resultdir(traffic, fault_rate, size, injection_rate, run):
+    rows, cols = size
+    return Path(traffic, str(fault_rate), f'{rows}x{cols}', str(injection_rate), str(run))
 
-def run_job(traffic, fault_rate, num_rows, injection_rate, run):
-    resultdir = get_resultdir(traffic, fault_rate, num_rows, injection_rate, run)
+def run_job(config):
+    traffic, fault_rate, size, injection_rate, run = config
+
+    resultdir = get_resultdir(traffic, fault_rate, size, injection_rate, run)
+
+    rows, cols = size
 
     with TemporaryDirectory() as rundir:
         print(f'[ START ] {resultdir}', flush=True)
         starttime = time()
-        subprocess.run([
-            GEM5_OPT_EXE,
-            f'--outdir={rundir}',
-            '--redirect-stdout',
-            '--redirect-stderr',
-            '--silent-redirect',
-            CONFIG,
-            '--network=garnet',
-            '--sim-cycles=1000000',
-            '--topology=FaultyMesh_ZXY',
-            '--routing-algorithm=2', # custom
-            f'--synthetic={traffic}',
-            f'--fault-rate={fault_rate}',
-            f'--mesh-rows={num_rows}',
-            f'--num-cpus={num_rows * num_rows}',
-            f'--num-dirs={num_rows * num_rows}',
-            f'--injectionrate={injection_rate}',
-        ])
-        endtime = time()
+        try:
+            subprocess.run([
+                GEM5_OPT_EXE,
+                f'--outdir={rundir}',
+                '--redirect-stdout',
+                '--redirect-stderr',
+                '--silent-redirect',
+                CONFIG,
+                '--network=garnet',
+                '--sim-cycles=1000000',
+                '--topology=FaultyMesh_ZXY',
+                '--routing-algorithm=2', # custom
+                f'--synthetic={traffic}',
+                f'--fault-rate={fault_rate}',
+                f'--mesh-rows={rows}',
+                f'--mesh-cols={cols}',
+                f'--num-cpus={rows * cols}',
+                f'--num-dirs={rows * cols}',
+                f'--injectionrate={injection_rate}',
+            ])
+            endtime = time()
 
-        tempdir = TemporaryDirectory()
-        files_to_copy = (
-            'config.system.ruby.dot',
-            'simerr.txt',
-            'simout.txt',
-            'stats.txt'
-        )
+            tempdir = TemporaryDirectory()
+            files_to_copy = (
+                'config.system.ruby.dot',
+                'simerr.txt',
+                'simout.txt',
+                'stats.txt'
+            )
 
-        for file in files_to_copy:
-            shutil.copyfile(Path(rundir, file), Path(tempdir.name, file))
+            for file in files_to_copy:
+                shutil.copyfile(Path(rundir, file), Path(tempdir.name, file))
 
-        if not resultdir.parent.exists():
-            resultdir.parent.mkdir(parents=True)
+            if not resultdir.parent.exists():
+                resultdir.parent.mkdir(parents=True)
 
 
-        shutil.move(tempdir.name, resultdir)
-        print(f'[ DONE ] {resultdir} {endtime - starttime:.3f}s', flush=True)
+            shutil.move(tempdir.name, resultdir)
+            print(f'[ DONE ] {resultdir} {endtime - starttime:.3f}s', flush=True)
+        except subprocess.CalledProcessError as e:
+            print(f'[ ERROR ] {e}')
+
 
 def main():
     assert GEM5_OPT_EXE.exists()
@@ -89,7 +99,7 @@ def main():
     args = parser.parse_args()
 
     def configs():
-        for config_info in product(TRAFFIC, FAULT_RATES, NUM_ROWS, INJECTION_RATES, range(1, RUNS+1)):
+        for config_info in product(TRAFFIC, FAULT_RATES, SIZES, INJECTION_RATES, range(1, RUNS+1)):
             resultdir = get_resultdir(*config_info)
 
             if resultdir.exists():
@@ -109,7 +119,7 @@ def main():
             sys.exit(0)
 
     with Pool(processes=args.jobs) as pool:
-        pool.starmap(run_job, configs())
+        pool.imap_unordered(run_job, configs(), chunksize=64)
 
     print('[ COMPLETE ]')
 

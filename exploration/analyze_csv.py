@@ -8,7 +8,9 @@ import statsmodels.api as sm
 def main():
     data = pd.read_csv(sys.argv[1])
 
-    independent_vars = ['fault_rate', 'num_rows', 'injection_rate']
+    data['per_layer'] = data.num_rows * data.num_cols
+
+    independent_vars = ['fault_rate', 'per_layer', 'injection_rate']
     dependent_vars = [field for field in data.axes[1] if field not in independent_vars]
 
     x = data[independent_vars]
@@ -18,8 +20,6 @@ def main():
         y = data[dep_var]
         model = sm.OLS(y, x).fit()
         print(model.summary())
-
-
 
 if __name__ == '__main__':
     main()
