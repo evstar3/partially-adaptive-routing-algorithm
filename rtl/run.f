@@ -1,9 +1,9 @@
 # Source files
-../src/*
-../tb/*
+src/*.sv
+tb/*.sv
 
 # Top-level module
--top bist_tb
+-top rcu
 
 # Simulation options
 # -access +rwc
