@@ -14,7 +14,7 @@ from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 TRAFFIC = ['uniform_random']
 FAULT_RATES = [i / 100 for i in range(0, 16, 1)]
 SIZES = [(4, 4), (8, 8)] # (row, col)
-INJECTION_RATES = [i / 100 for i in range(2, 31, 1)]
+INJECTION_RATES = [i / 100 for i in range(2, 41, 1)]
 RUNS = 20
 
 GEM5_OPT_EXE = Path('../gem5/build/NULL/gem5.opt')
@@ -76,7 +76,6 @@ def run_job(config):
         except subprocess.CalledProcessError as e:
             print(f'[ ERROR ] {e}')
 
-
 def main():
     assert GEM5_OPT_EXE.exists()
     assert CONFIG.exists()
@@ -119,7 +118,8 @@ def main():
             sys.exit(0)
 
     with Pool(processes=args.jobs) as pool:
-        pool.imap_unordered(run_job, configs(), chunksize=64)
+        for _ in pool.imap_unordered(run_job, configs(), chunksize=64):
+            pass
 
     print('[ COMPLETE ]')
 

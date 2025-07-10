@@ -11,7 +11,14 @@ def main():
     data['per_layer'] = data.num_rows * data.num_cols
 
     independent_vars = ['fault_rate', 'per_layer', 'injection_rate']
-    dependent_vars = [field for field in data.axes[1] if field not in independent_vars]
+
+    dependent_vars = [
+        'system.ruby.network.average_flit_latency',
+        'system.ruby.network.average_packet_latency',
+        'system.ruby.network.flits_received::total',
+        'system.ruby.network.packets_received::total',
+    ]
+ 
 
     x = data[independent_vars]
     x = sm.add_constant(x)
