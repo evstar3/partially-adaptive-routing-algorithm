@@ -15,7 +15,7 @@ TRAFFIC = ['uniform_random']
 FAULT_RATES = [i / 100 for i in range(0, 16, 1)]
 SIZES = [(4, 4), (8, 8)] # (row, col)
 INJECTION_RATES = [i / 100 for i in range(2, 41, 1)]
-RUNS = 20
+RUNS = 10
 
 GEM5_OPT_EXE = Path('../gem5/build/NULL/gem5.opt')
 CONFIG = Path('../gem5/configs/example/faulty_garnet_synth_traffic.py')
@@ -33,6 +33,7 @@ def run_job(config):
 
     with TemporaryDirectory() as rundir:
         print(f'[ START ] {resultdir}', flush=True)
+
         starttime = time()
         try:
             subprocess.run([
@@ -56,25 +57,31 @@ def run_job(config):
             ])
             endtime = time()
 
-            tempdir = TemporaryDirectory()
+            files_to_copy = ('stats.txt',)
+            status = 'DONE'
+            message = f'{resultdir} {endtime - starttime:.3f}s'
+
+        except subprocess.CalledProcessError as e:
             files_to_copy = (
                 'config.system.ruby.dot',
                 'simerr.txt',
                 'simout.txt',
                 'stats.txt'
             )
+            status = 'ERROR'
+            message = f'{resultdir} {e}'
 
-            for file in files_to_copy:
-                shutil.copyfile(Path(rundir, file), Path(tempdir.name, file))
+        tempdir = TemporaryDirectory()
 
-            if not resultdir.parent.exists():
-                resultdir.parent.mkdir(parents=True)
+        for file in files_to_copy:
+            shutil.copyfile(Path(rundir, file), Path(tempdir.name, file))
 
+        if not resultdir.parent.exists():
+            resultdir.parent.mkdir(parents=True)
 
-            shutil.move(tempdir.name, resultdir)
-            print(f'[ DONE ] {resultdir} {endtime - starttime:.3f}s', flush=True)
-        except subprocess.CalledProcessError as e:
-            print(f'[ ERROR ] {e}')
+        shutil.move(tempdir.name, resultdir)
+
+    print(f'[ {status} ] {message}')
 
 def main():
     assert GEM5_OPT_EXE.exists()
