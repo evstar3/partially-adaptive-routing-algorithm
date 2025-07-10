@@ -3,6 +3,7 @@
 module rcu_single#(
     parameter position_t THIS_POS = '{x:'0, y:'0, z:'0}
 ) (
+    input  port_t      inport,
     input  position_t  dest,
     input  logic       up_faulty,
     input  logic       down_faulty,
@@ -30,21 +31,26 @@ assign y_hops = {1'b0, dest.y} - {1'b0, THIS_POS.y};
 assign y_dir  = {2{y_hops[$clog2(MESH_HEIGHT)]}} | {1'b0, |y_hops[$clog2(MESH_HEIGHT)-1:0]};
 
 logic x_sel;
-port_t chosen_x;
+port_t backup_direction;
 
 always_comb begin
 
-    x_sel = x_dir == ZERO ? rand_bit : x_dir == POS;
-
-    chosen_x = x_sel ? EAST : WEST;
+    // randomly pick the backup x direction
+    if (THIS_POS.x == 0 || inport == WEST)
+        backup_direction = EAST;
+    else if (THIS_POS.x == MESH_WIDTH - 1 || inport == EAST)
+        backup_direction = WEST;
+    else
+        backup_direction = rand_bit ? EAST : WEST;
 
     if (z_dir != ZERO) begin
         if (z_dir == POS && up_faulty || z_dir == NEG && down_faulty)
-            outport = chosen_x;
+            // use the random backup x direction
+            outport = backup_direction;
         else
             outport = z_dir == POS ? UP : DOWN;
     end else if (x_dir != ZERO)
-        outport = chosen_x;
+        outport = x_dir == POS ? EAST : WEST;
     else if (y_dir != ZERO)
         outport = y_dir == POS ? NORTH : SOUTH;
     else
