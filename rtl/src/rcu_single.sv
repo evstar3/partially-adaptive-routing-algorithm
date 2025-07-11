@@ -34,14 +34,13 @@ logic x_sel;
 port_t backup_direction;
 
 always_comb begin
-
-    // randomly pick the backup x direction
-    if (THIS_POS.x == 0 || inport == WEST)
-        backup_direction = EAST;
-    else if (THIS_POS.x == MESH_WIDTH - 1 || inport == EAST)
+    // select the backup direction
+    if (THIS_POS.x == MESH_WIDTH - 1)
         backup_direction = WEST;
+    else if (inport == EAST)
+        backup_direction = THIS_POS.x == 0 ? DROP : WEST;
     else
-        backup_direction = rand_bit ? EAST : WEST;
+        backup_direction = EAST;
 
     if (z_dir != ZERO) begin
         if (z_dir == POS && up_faulty || z_dir == NEG && down_faulty)

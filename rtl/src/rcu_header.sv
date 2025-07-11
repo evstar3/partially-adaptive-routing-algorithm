@@ -18,7 +18,8 @@ typedef enum logic [2:0] {
     EAST  = 3'd3,
     WEST  = 3'd4,
     UP    = 3'd5,
-    DOWN  = 3'd6
+    DOWN  = 3'd6,
+    DROP  = 3'd7
 } port_t;
 
 `endif

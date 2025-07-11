@@ -12,7 +12,14 @@ def main():
     sizes = [2, 4, 8, 16]
 
     def system_prob(link_prob, size):
-        return 1 - mp.power(1 - mp.power(link_prob, size), size)
+        p_row_bad = mp.power(link_prob, size)
+
+        p_row_good = 1 - p_row_bad
+
+        p_system_good = mp.power(p_row_good, size)
+
+        p_system_bad = 1 - p_system_good
+        return p_system_bad
 
     print(
         '\n'.join(
