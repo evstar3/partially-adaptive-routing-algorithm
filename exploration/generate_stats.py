@@ -54,7 +54,7 @@ def run_job(config):
                 f'--num-cpus={rows * cols}',
                 f'--num-dirs={rows * cols}',
                 f'--injectionrate={injection_rate}',
-            ])
+            ], check=True)
             endtime = time()
 
             files_to_copy = ('stats.txt',)

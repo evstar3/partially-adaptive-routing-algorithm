@@ -17,9 +17,12 @@ class Graph:
         return edge
 
     def find_cycle(self):
+        cycles = []
         for root in self.vertices:
             if cycle := self._find_cycle([], root):
-                return cycle
+                cycles.append(cycle)
+
+        return min(cycles, key=lambda x: len(x)) if cycles else None
 
     def _find_cycle(self, history, new_node):
         if new_node in history:
@@ -121,11 +124,15 @@ class Channel:
         return f'{self.start}--{self.direction.name}:{self.vc}->{self.end()}'
 
 class Network:
-    def __init__(self, width, height, depth, fault_rate=0.0):
+
+    def __init__(self, width, height, depth, fault_rate=0.0, alg=0):
         self.width = width
         self.height = height
         self.depth = depth
         self.fault_rate = fault_rate
+
+        algs = [self.route0]
+        self.route = algs[alg]
 
         self.nodes = {Vector(x, y, z) for x, y, z in product(range(width), range(height), range(depth))}
 
@@ -152,8 +159,10 @@ class Network:
 
                     if not random() < self.fault_rate:
                         channels += [
-                            Channel(Vector(x, y, z), UnitVector.UP, 1),
+                            Channel(Vector(x, y, z), UnitVector.UP, 0),
                             Channel(Vector(x, y, z + 1), UnitVector.DOWN, 0),
+                            Channel(Vector(x, y, z), UnitVector.UP, 1),
+                            Channel(Vector(x, y, z + 1), UnitVector.DOWN, 1),
                         ]
 
                     for channel in channels:
@@ -167,7 +176,7 @@ class Network:
             for dst in self.nodes:
                 curr_channel = Channel(src, UnitVector.LOCAL, 0)
                 while True:
-                    next_channel = self.route_faulty(curr_channel, dst)
+                    next_channel = self.route(curr_channel, dst)
 
                     if next_channel.direction == UnitVector.LOCAL and next_channel.end() == dst:
                         break
@@ -181,7 +190,7 @@ class Network:
 
         self.cdg = Graph(self.channels, self.turns)
 
-    def route_faulty(self, channel, dest_node):
+    def route0(self, channel, dest_node):
         vec = dest_node - channel.end()
 
         if vec.z != 0:
@@ -233,13 +242,14 @@ def main():
     parser.add_argument('height', type=int)
     parser.add_argument('depth', type=int)
     parser.add_argument('-p', '--fault_rate', type=float, required=False, default=0)
+    parser.add_argument('-a', '--algorithm', type=int, required=False, default=0)
 
     args = parser.parse_args()
 
     start = time()
 
     try:
-        ZXY_network = Network(args.width, args.height, args.depth, fault_rate=args.fault_rate)
+        ZXY_network = Network(args.width, args.height, args.depth, fault_rate=args.fault_rate, alg=args.algorithm)
     except RuntimeError as e:
         print(e, file=sys.stderr)
         exit(0)
