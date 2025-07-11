@@ -248,15 +248,7 @@ class Network:
 
             # fault detected
             outdir = None
-            if channel.direction in (UnitVector.UP, UnitVector.DOWN, UnitVector.EAST, UnitVector.LOCAL):
-                # start / continue the east X sweep, or go west if at east the edge
-                if self.width == 1:
-                    outdir = UnitVector.DROP
-                elif channel.end().x == self.width - 1:
-                    outdir = UnitVector.WEST
-                else:
-                    outdir = UnitVector.EAST
-            elif channel.direction == UnitVector.WEST:
+            if channel.direction == UnitVector.WEST:
                 # continue the west X sweep, or start the north Y sweep if at the west edge
                 if channel.end().x == 0 and self.height == 1:
                     outdir = UnitVector.DROP
@@ -273,10 +265,23 @@ class Network:
                 else:
                     outdir = UnitVector.NORTH
             elif channel.direction == UnitVector.SOUTH:
+                # continue the south Y sweep
                 if channel.end().y == 0:
                     outdir = UnitVector.DROP
                 else:
                     outdir = UnitVector.SOUTH
+            else:
+                # start / continue the east X sweep, or go west if at east the edge
+                if self.width == 1 and self.height == 1:
+                    outdir = UnitVector.DROP
+                elif self.width == 1 and channel.end().y == self.height - 1:
+                    outdir = UnitVector.SOUTH
+                elif self.width == 1:
+                    outdir = UnitVector.NORTH
+                elif channel.end().x == self.width - 1:
+                    outdir = UnitVector.WEST
+                else:
+                    outdir = UnitVector.EAST
 
             assert outdir
 

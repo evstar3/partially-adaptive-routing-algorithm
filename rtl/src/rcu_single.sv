@@ -31,21 +31,53 @@ assign y_hops = {1'b0, dest.y} - {1'b0, THIS_POS.y};
 assign y_dir  = {2{y_hops[$clog2(MESH_HEIGHT)]}} | {1'b0, |y_hops[$clog2(MESH_HEIGHT)-1:0]};
 
 logic x_sel;
-port_t backup_direction;
+port_t backup;
+
+logic this_east_edge, this_west_edge, this_north_edge, this_south_edge;
+assign this_east_edge = THIS.x == MESH_WIDTH - 1;
+assign this_west_edge = THIS.x == 0;
+assign this_north_edge = THIS.y == MESH_HEIGHT - 1;
+assign this_south_edge = THIS.y == 0;
 
 always_comb begin
     // select the backup direction
-    if (THIS_POS.x == MESH_WIDTH - 1)
-        backup_direction = WEST;
-    else if (inport == EAST)
-        backup_direction = THIS_POS.x == 0 ? DROP : WEST;
-    else
-        backup_direction = EAST;
+    if (inport == EAST) begin
+        if (this_west_edge && MESH_HEIGHT == 1)
+            backup = DROP;
+        else if (this_west_edge && this_north_edge)
+            backup = SOUTH;
+        else if (this_west_edge)
+            backup = NORTH;
+        else
+            backup = WEST;
+    end else if (inport == SOUTH) begin
+        if (this_north_edge)
+            backup = SOUTH;
+        else
+            backup = NORTH;
+    end else if (inport == NORTH) begin
+        if (this_south_edge)
+            backup = DROP;
+        else
+            backup = SOUTH;
+    end else begin
+        if (MESH_WIDTH == 1 && MESH_HEIGHT == 1)
+            backup = DROP;
+        else if (this_north_edge && MESH_WIDTH == 1)
+            backup = SOUTH;
+        else if (MESH_WIDTH == 1)
+            backup = NORTH;
+        else if (this_east_edge)
+            backup = WEST;
+        else
+            backup = EAST;
+    end
+
 
     if (z_dir != ZERO) begin
         if (z_dir == POS && up_faulty || z_dir == NEG && down_faulty)
             // use the random backup x direction
-            outport = backup_direction;
+            outport = backup;
         else
             outport = z_dir == POS ? UP : DOWN;
     end else if (x_dir != ZERO)
