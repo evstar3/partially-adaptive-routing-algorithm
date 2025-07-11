@@ -8,11 +8,7 @@ def main():
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
-        'rows',
-        type=int
-    )
-    parser.add_argument(
-        'columns',
+        'size',
         type=int
     )
     parser.add_argument(
@@ -22,15 +18,16 @@ def main():
 
     args = parser.parse_args()
 
-    runs = 100000
-    filled_col = 0
+    runs = 1000000
+    sys_fail = 0
     for _ in range(runs):
-        grid = [[random.random() < args.p for _ in range(args.rows)] for _ in range(args.columns)]
+        grid = [[random.random() < args.p for col in range(args.size)] for row in range(args.size)]
 
-        if any(all(col) for col in grid):
-            filled_col += 1
+        if all(row[0] for row in grid):
+            if any(all(row) for row in grid):
+                sys_fail += 1
 
-    print(filled_col / runs)
+    print(sys_fail / runs)
 
 
 if __name__ == '__main__':
