@@ -6,7 +6,7 @@ import argparse
 from itertools import product
 from enum import Enum
 from random import random, choice
-from time import time, sleep
+from time import time
 
 class Graph:
     def __init__(self, vertices, edges):
@@ -144,16 +144,20 @@ class Network:
                         Channel(Vector(x + 1, y, z), UnitVector.WEST, 0),
                         Channel(Vector(x, y, z), UnitVector.NORTH, 0),
                         Channel(Vector(x, y + 1, z), UnitVector.SOUTH, 0),
+                        Channel(Vector(x, y, z), UnitVector.EAST, 1),
+                        Channel(Vector(x + 1, y, z), UnitVector.WEST, 1),
+                        Channel(Vector(x, y, z), UnitVector.NORTH, 1),
+                        Channel(Vector(x, y + 1, z), UnitVector.SOUTH, 1),
                     ]
 
                     if not random() < self.fault_rate:
                         channels += [
-                            Channel(Vector(x, y, z), UnitVector.UP, 0),
+                            Channel(Vector(x, y, z), UnitVector.UP, 1),
                             Channel(Vector(x, y, z + 1), UnitVector.DOWN, 0),
                         ]
 
                     for channel in channels:
-                        if channel.end() in self.nodes:
+                        if channel.start in self.nodes and channel.end() in self.nodes:
                             self.channels.add(channel)
 
         self.inet = Graph(self.nodes, {(c.start, c.end()) for c in self.channels})
@@ -161,29 +165,14 @@ class Network:
         self.turns = set()
         for src in self.nodes:
             for dst in self.nodes:
-                #print('--BEGIN--')
-                #print(src, dst)
                 curr_channel = Channel(src, UnitVector.LOCAL, 0)
-                #print(curr_channel)
                 while True:
-                    if curr_channel.direction == UnitVector.LOCAL and curr_channel.end() == dst:
+                    next_channel = self.route_faulty(curr_channel, dst)
+
+                    if next_channel.direction == UnitVector.LOCAL and next_channel.end() == dst:
                         break
 
-                    next_channel = self.route_faulty(curr_channel, dst)
-                    #print(next_channel)
-
                     if next_channel.direction == UnitVector.DROP:
-                        found_bad_row = False
-                        for y in range(self.height):
-                            found_good_link = False
-                            for x in range(self.width):
-                                test_up = Channel(Vector(x, y, 0), UnitVector.UP, 0)
-                                test_down = Channel(Vector(x, y, 1), UnitVector.DOWN, 0)
-                                assert (test_up in self.channels) == (test_down in self.channels)
-                                found_good_link = found_good_link or (test_up in self.channels)
-                            found_bad_row = found_bad_row or not found_good_link
-
-                        assert(found_bad_row)
                         raise RuntimeError('Dropping packets, system failure')
 
                     self.turns.add((curr_channel, next_channel))
@@ -197,7 +186,7 @@ class Network:
 
         if vec.z != 0:
             if vec.z > 0:
-                next_channel = Channel(channel.end(), UnitVector.UP, 0)
+                next_channel = Channel(channel.end(), UnitVector.UP, 1)
             elif vec.z < 0:
                 next_channel = Channel(channel.end(), UnitVector.DOWN, 0)
 
@@ -205,33 +194,33 @@ class Network:
                 # fault detected
                 if self.width == 1:
                     # no where to go, drop the packet
-                    next_channel = Channel(channel.end(), UnitVector.DROP, 0)
+                    next_channel = Channel(channel.end(), UnitVector.DROP, next_channel.vc)
                 elif channel.end().x == self.width - 1:
                     # on the east edge, go west
-                    next_channel = Channel(channel.end(), UnitVector.WEST, 0)
+                    next_channel = Channel(channel.end(), UnitVector.WEST, next_channel.vc)
                 elif channel.direction == UnitVector.WEST and channel.end().x == 0:
                     # on the west edge but we came from the west. the whole row is bad!
-                    next_channel = Channel(channel.end(), UnitVector.DROP, 0)
+                    next_channel = Channel(channel.end(), UnitVector.DROP, next_channel.vc)
                 elif channel.direction == UnitVector.WEST:
                     # heading west but not finding a z-link. keep going west!
-                    next_channel = Channel(channel.end(), UnitVector.WEST, 0)
+                    next_channel = Channel(channel.end(), UnitVector.WEST, next_channel.vc)
                 else:
                     # default to east
-                    next_channel = Channel(channel.end(), UnitVector.EAST, 0)
+                    next_channel = Channel(channel.end(), UnitVector.EAST, next_channel.vc)
 
             return next_channel
 
         if vec.x > 0:
-            return Channel(channel.end(), UnitVector.EAST, 0)
+            return Channel(channel.end(), UnitVector.EAST, channel.vc)
 
         if vec.x < 0:
-            return Channel(channel.end(), UnitVector.WEST, 0)
+            return Channel(channel.end(), UnitVector.WEST, channel.vc)
       
         if vec.y > 0:
-            return Channel(channel.end(), UnitVector.NORTH, 0)
+            return Channel(channel.end(), UnitVector.NORTH, channel.vc)
 
         if vec.y < 0:
-            return Channel(channel.end(), UnitVector.SOUTH, 0)
+            return Channel(channel.end(), UnitVector.SOUTH, channel.vc)
 
         return Channel(channel.end(), UnitVector.LOCAL, 0)
 
@@ -249,30 +238,20 @@ def main():
 
     start = time()
 
-    count = 0
-    runs = 1000
-    for _ in range(runs):
-        try:
-            ZXY_network = Network(args.width, args.height, args.depth, fault_rate=args.fault_rate)
-        except RuntimeError:
-            count += 1
-    print(count / runs)
-    exit(0)
-
-    #print(Channel(Vector(1, 0, 0), UnitVector.UP, 0) in ZXY_network.channels)
-    #print(ZXY_network.route(Channel(Vector(1, 0, 0), UnitVector.LOCAL, 0), Vector(1, 0, 1)))
-    #print(ZXY_network.route(Channel(Vector(1, 0, 0), UnitVector.WEST, 0), Vector(1, 0, 1)))
+    try:
+        ZXY_network = Network(args.width, args.height, args.depth, fault_rate=args.fault_rate)
+    except RuntimeError as e:
+        print(e, file=sys.stderr)
+        exit(0)
 
     if not ZXY_network.inet.strongly_connected():
-        print('not strongly connected')
-        exit(1)
+        print('not strongly connected', file=sys.stderr)
+        exit(0)
 
     if cycle := ZXY_network.cdg.find_cycle():
         print('not deadlock free')
         print(cycle)
         exit(1)
-    
-    print(f'{time() - start:.2f}s')
 
 if __name__ == '__main__':
     main()
