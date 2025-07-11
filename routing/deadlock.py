@@ -131,7 +131,7 @@ class Network:
         self.depth = depth
         self.fault_rate = fault_rate
 
-        algs = [self.route0]
+        algs = [self.route0, self.route1]
         self.route = algs[alg]
 
         self.nodes = {Vector(x, y, z) for x, y, z in product(range(width), range(height), range(depth))}
@@ -218,6 +218,69 @@ class Network:
                     next_channel = Channel(channel.end(), UnitVector.EAST, next_channel.vc)
 
             return next_channel
+
+        if vec.x > 0:
+            return Channel(channel.end(), UnitVector.EAST, channel.vc)
+
+        if vec.x < 0:
+            return Channel(channel.end(), UnitVector.WEST, channel.vc)
+      
+        if vec.y > 0:
+            return Channel(channel.end(), UnitVector.NORTH, channel.vc)
+
+        if vec.y < 0:
+            return Channel(channel.end(), UnitVector.SOUTH, channel.vc)
+
+        return Channel(channel.end(), UnitVector.LOCAL, 0)
+
+    def route1(self, channel, dest_node):
+        # this one also tries the last column
+        vec = dest_node - channel.end()
+
+        if vec.z != 0:
+            if vec.z > 0:
+                next_channel = Channel(channel.end(), UnitVector.UP, 1)
+            elif vec.z < 0:
+                next_channel = Channel(channel.end(), UnitVector.DOWN, 0)
+
+            if next_channel in self.channels:
+                return next_channel
+
+            # fault detected
+            outdir = None
+            if channel.direction in (UnitVector.UP, UnitVector.DOWN, UnitVector.EAST, UnitVector.LOCAL):
+                # start / continue the east X sweep, or go west if at east the edge
+                if self.width == 1:
+                    outdir = UnitVector.DROP
+                elif channel.end().x == self.width - 1:
+                    outdir = UnitVector.WEST
+                else:
+                    outdir = UnitVector.EAST
+            elif channel.direction == UnitVector.WEST:
+                # continue the west X sweep, or start the north Y sweep if at the west edge
+                if channel.end().x == 0 and self.height == 1:
+                    outdir = UnitVector.DROP
+                elif channel.end().x == 0 and channel.end().y == self.height - 1:
+                    outdir = UnitVector.SOUTH
+                elif channel.end().x == 0:
+                    outdir = UnitVector.NORTH
+                else:
+                    outdir = UnitVector.WEST
+            elif channel.direction == UnitVector.NORTH:
+                # continue the north Y sweep, or start the south Y sweep if at the north edge
+                if channel.end().y == self.height - 1:
+                    outdir = UnitVector.SOUTH
+                else:
+                    outdir = UnitVector.NORTH
+            elif channel.direction == UnitVector.SOUTH:
+                if channel.end().y == 0:
+                    outdir = UnitVector.DROP
+                else:
+                    outdir = UnitVector.SOUTH
+
+            assert outdir
+
+            return Channel(channel.end(), outdir, next_channel.vc)
 
         if vec.x > 0:
             return Channel(channel.end(), UnitVector.EAST, channel.vc)
