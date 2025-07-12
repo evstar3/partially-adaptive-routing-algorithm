@@ -12,9 +12,9 @@ from time import time
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 
 TRAFFIC = ['uniform_random']
-FAULT_RATES = [i / 100 for i in range(0, 16, 1)]
+FAULT_RATES = [i / 100 for i in range(0, 16, 3)]
 SIZES = [(4, 4), (8, 8)] # (row, col)
-INJECTION_RATES = [i / 100 for i in range(2, 41, 1)]
+INJECTION_RATES = [i / 100 for i in range(2, 41, 2)]
 RUNS = 10
 
 GEM5_OPT_EXE = Path('../gem5/build/NULL/gem5.opt')
@@ -63,7 +63,6 @@ def run_job(config):
 
         except subprocess.CalledProcessError as e:
             files_to_copy = (
-                'config.system.ruby.dot',
                 'simerr.txt',
                 'simout.txt',
                 'stats.txt'

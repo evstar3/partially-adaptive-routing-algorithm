@@ -23,8 +23,12 @@ def main():
     args = parser.parse_args()
     x, y, z, pz = args.x, args.y, args.z, args.pz
 
-    print(nstr(p_sys_fail_regular(x, y, z, pz), n=6))
-    print(nstr(p_sys_fail_adaptive(x, y, z, pz), n=6))
+    p_reg = p_sys_fail_regular(x, y, z, pz)
+    p_adp = p_sys_fail_adaptive(x, y, z, pz)
+
+    print(nstr(p_reg, n=6))
+    print(nstr(p_adp, n=6))
+    print(nstr(p_reg / p_adp, n=6))
 
 if __name__ == '__main__':
     main()
