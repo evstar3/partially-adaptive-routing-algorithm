@@ -8,7 +8,7 @@ module bist_receiver#(
     
     input  logic [TEST_CHANNELS-1:0] input_channels,
 
-    output logic ready,
+    output logic busy,
     output logic failed,
     output logic [TEST_CHANNELS-1:0] output_channels
 );
@@ -16,9 +16,8 @@ module bist_receiver#(
 logic [31:0] cases;
 logic [31:0] rng_out;
 logic [TEST_CHANNELS-1:0] expected_input;
-logic test_complete;
-assign test_complete = cases == TEST_CASES;
-assign ready = failed | test_complete;
+logic failed;
+assign busy = cases != TEST_CASES;
 
 lfsr32#(
     .SEED(SEED)
@@ -34,7 +33,7 @@ always_ff @(posedge clk or posedge reset) begin
         expected_input <= '0;
         failed <= '0;
     end else begin
-        if (~ready) begin
+        if (busy) begin
             cases <= cases + 32'b1;
             expected_input <= (expected_input << 32) | rng_out;
             failed <= failed | (input_channels != expected_input);
@@ -43,7 +42,7 @@ always_ff @(posedge clk or posedge reset) begin
 end
 
 always_comb begin
-    if (ready & ~failed)
+    if (~busy | failed)
         output_channels = input_channels;
     else
         output_channels = 32'b0;

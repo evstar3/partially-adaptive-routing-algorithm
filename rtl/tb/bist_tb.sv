@@ -8,7 +8,7 @@ logic clk;
 logic reset; 
 
 logic [TEST_CHANNELS-1:0] sender_in;
-logic sender_ready;
+logic sender_busy;
 logic [TEST_CHANNELS-1:0] sender_out;
 
 bist_sender#(
@@ -19,13 +19,13 @@ bist_sender#(
     .clk(clk),
     .reset(reset),
     .input_channels(sender_in),
-    .ready(sender_ready),
+    .busy(sender_busy),
     .output_channels(sender_out)
 );
 
 logic [TEST_CHANNELS-1:0] receiver_in;
 logic [TEST_CHANNELS-1:0] receiver_out;
-logic receiver_ready, receiver_failed;
+logic receiver_busy, receiver_failed;
 
 logic [TEST_CHANNELS-1:0] force_hi, force_lo;
 
@@ -39,7 +39,7 @@ bist_receiver#(
     .clk(clk),
     .reset(reset),
     .input_channels(receiver_in),
-    .ready(receiver_ready),
+    .busy(receiver_busy),
     .failed(receiver_failed),
     .output_channels(receiver_out)
 );
@@ -60,7 +60,7 @@ initial begin
     #5;
     reset = 1'b0;
 
-    while (~receiver_ready)
+    while (receiver_busy)
         #5;
 
     assert(sender_in == receiver_out);
@@ -73,7 +73,7 @@ initial begin
     #5;
     reset = 1'b0;
 
-    while (~receiver_ready)
+    while (receiver_busy)
         #5;
 
     assert(receiver_failed);

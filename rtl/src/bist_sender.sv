@@ -8,14 +8,14 @@ module bist_sender#(
     
     input  logic [TEST_CHANNELS-1:0] input_channels,
 
-    output logic ready,
+    output logic busy,
     output logic [TEST_CHANNELS-1:0] output_channels
 );
 
 logic [31:0] cases;
 logic [31:0] rng_out;
 logic [TEST_CHANNELS-1:0] test_output;
-assign ready = cases == TEST_CASES;
+assign busy = cases != TEST_CASES;
 
 lfsr32#(
     .SEED(SEED)
@@ -30,7 +30,7 @@ always_ff @(posedge clk or posedge reset) begin
         cases <= '0;
         test_output <= '0;
     end else begin
-        if (~ready) begin
+        if (busy) begin
             cases <= cases + 32'b1;
             test_output <= (test_output << 32) | rng_out;
         end
@@ -38,7 +38,7 @@ always_ff @(posedge clk or posedge reset) begin
 end
 
 always_comb begin
-    if (ready)
+    if (busy)
         output_channels = input_channels;
     else
         output_channels = test_output;
