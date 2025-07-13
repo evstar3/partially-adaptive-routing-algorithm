@@ -39,9 +39,9 @@ end
 
 always_comb begin
     if (busy)
-        output_channels = input_channels;
-    else
         output_channels = test_output;
+    else
+        output_channels = input_channels;
 end
 
 endmodule

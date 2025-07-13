@@ -16,7 +16,6 @@ module bist_receiver#(
 logic [31:0] cases;
 logic [31:0] rng_out;
 logic [TEST_CHANNELS-1:0] expected_input;
-logic failed;
 assign busy = cases != TEST_CASES;
 
 lfsr32#(

@@ -7,7 +7,7 @@ parameter int TEST_CASES = 1000;
 logic clk;
 logic reset; 
 logic [TEST_CHANNELS-1:0] input_channels;
-logic ready;
+logic busy;
 logic [TEST_CHANNELS-1:0] output_channels;
 
 bist_sender#(
@@ -18,7 +18,7 @@ bist_sender#(
     .clk(clk),
     .reset(reset),
     .input_channels(input_channels),
-    .ready(ready),
+    .busy(busy),
     .output_channels(output_channels)
 );
 
@@ -36,7 +36,7 @@ initial begin
     #5;
     reset = 1'b0;
 
-    while (~ready)
+    while (busy)
         #5;
 
     assert(output_channels == input_channels);

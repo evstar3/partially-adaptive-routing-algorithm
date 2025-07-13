@@ -9,7 +9,7 @@ src/virtual_channel.sv
 tb/*.sv
 
 # Top-level module
--top rcu_tb
+-top bist_tb
 
 # Simulation options
 # -access +rwc
