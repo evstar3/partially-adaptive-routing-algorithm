@@ -9,8 +9,7 @@ module bist_receiver#(
     input  logic [TEST_CHANNELS-1:0] input_channels,
 
     output logic busy,
-    output logic failed,
-    output logic [TEST_CHANNELS-1:0] output_channels
+    output logic failed
 );
 
 logic [31:0] cases;
@@ -38,13 +37,6 @@ always_ff @(posedge clk or posedge reset) begin
             failed <= failed | (input_channels != expected_input);
         end
     end
-end
-
-always_comb begin
-    if (~busy | failed)
-        output_channels = input_channels;
-    else
-        output_channels = 32'b0;
 end
 
 endmodule
