@@ -1,9 +1,6 @@
-`include "src/rcu_header.sv"
+import rcu_header::*;
 
 module rcu#(
-    parameter int MESH_WIDTH  = 2,
-    parameter int MESH_HEIGHT = 2,
-    parameter int MESH_DEPTH  = 2,
     parameter position_t THIS_POS = '{x:'0, y:'0, z:'0}
 ) (
     input  port_t      inport,
@@ -20,26 +17,28 @@ typedef enum logic [1:0] {
     NEG  = 2'd3
 } direction_t;
 
+direction_t x_dir, y_dir, z_dir;
+
 logic [$clog2(MESH_DEPTH):0] z_hops;
 assign z_hops = {1'b0, dest.z} - {1'b0, THIS_POS.z};
-assign z_dir  = {2{z_hops[$clog2(MESH_DEPTH)]}} | {1'b0, |z_hops[$clog2(MESH_DEPTH)-1:0]};
+assign z_dir  = direction_t'({2{z_hops[$clog2(MESH_DEPTH)]}} | {1'b0, |z_hops[$clog2(MESH_DEPTH)-1:0]});
 
 logic [$clog2(MESH_WIDTH):0] x_hops;
-assign x_hops = {1'b0, dest.X} - {1'b0, THIS_POS.x};
-assign x_dir  = {2{x_hops[$clog2(MESH_WIDTH)]}} | {1'b0, |x_hops[$clog2(MESH_WIDTH)-1:0]};
+assign x_hops = {1'b0, dest.x} - {1'b0, THIS_POS.x};
+assign x_dir  = direction_t'({2{x_hops[$clog2(MESH_WIDTH)]}} | {1'b0, |x_hops[$clog2(MESH_WIDTH)-1:0]});
 
 logic [$clog2(MESH_HEIGHT):0] y_hops;
 assign y_hops = {1'b0, dest.y} - {1'b0, THIS_POS.y};
-assign y_dir  = {2{y_hops[$clog2(MESH_HEIGHT)]}} | {1'b0, |y_hops[$clog2(MESH_HEIGHT)-1:0]};
+assign y_dir  = direction_t'({2{y_hops[$clog2(MESH_HEIGHT)]}} | {1'b0, |y_hops[$clog2(MESH_HEIGHT)-1:0]});
 
 logic x_sel;
 port_t backup;
 
 logic this_east_edge, this_west_edge, this_north_edge, this_south_edge;
-assign this_east_edge = THIS.x == MESH_WIDTH - 1;
-assign this_west_edge = THIS.x == 0;
-assign this_north_edge = THIS.y == MESH_HEIGHT - 1;
-assign this_south_edge = THIS.y == 0;
+assign this_east_edge = THIS_POS.x == MESH_WIDTH - 1;
+assign this_west_edge = THIS_POS.x == 0;
+assign this_north_edge = THIS_POS.y == MESH_HEIGHT - 1;
+assign this_south_edge = THIS_POS.y == 0;
 
 always_comb begin
     // select the backup direction

@@ -110,20 +110,11 @@ rcu#(
 
 def main():
     network_size = Vector(3, 3, 3)
-    network_size_bits = Vector(
-        ceil(log2(network_size.x)),
-        ceil(log2(network_size.y)),
-        ceil(log2(network_size.z))
-    )
 
     lines = [
         f'''// THIS CODE WAS AUTOMATICALLY GENERATED
-
-`include "src/rcu_header.sv"
+import rcu_header::*;
 module rcu_tb;
-parameter int MESH_WIDTH = {network_size.x};
-parameter int MESH_HEIGHT = {network_size.y};
-parameter int MESH_DEPTH = {network_size.z};
 port_t inport;
 position_t dest;
 logic up_faulty, down_faulty;'''
@@ -158,7 +149,7 @@ logic up_faulty, down_faulty;'''
                         continue
 
                     expected = src.route(dest.pos, inport, up_faulty=up_faulty, down_faulty=down_faulty)
-                    lines.append(f'assert({src.outport} == {expected.name});')
+                    lines.append(f'assert({src.outport} == {expected.name}) else $display("expected %x, got %x", {expected.name}, {src.outport});')
 
     lines.append('$finish;')
     lines.append('end')

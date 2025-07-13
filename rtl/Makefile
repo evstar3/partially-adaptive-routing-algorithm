@@ -5,7 +5,7 @@ all: run
 
 # Clean target: remove generated files
 clean:
-	rm -rf worklib xcelium.d *.log *.history
+	rm -rf worklib xcelium.d *.log *.history tb/rcu_tb.sv
 
 # Compile and elaborate design
 compile:
@@ -16,7 +16,7 @@ elaborate:
 	xrun -f $(RUNFILE) -elaborate
 
 # Run simulation
-run: elaborate tb/rcu_tb.sv
+run: tb/rcu_tb.sv elaborate
 	xrun -f $(RUNFILE) -R
 
 tb/rcu_tb.sv: ../util/gen_rcu_tb.py

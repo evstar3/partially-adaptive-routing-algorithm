@@ -71,6 +71,9 @@ class Vector:
         self.z = z
 
     def __eq__(self, other):
+        if type(other) != Vector:
+            return None
+
         return all((self.x == other.x, self.y == other.y, self.z == other.z))
 
     def __hash__(self):
