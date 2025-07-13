@@ -24,7 +24,6 @@ bist_sender#(
 );
 
 logic [TEST_CHANNELS-1:0] receiver_in;
-logic [TEST_CHANNELS-1:0] receiver_out;
 logic receiver_busy, receiver_failed;
 
 logic [TEST_CHANNELS-1:0] force_hi, force_lo;
@@ -40,8 +39,7 @@ bist_receiver#(
     .reset(reset),
     .input_channels(receiver_in),
     .busy(receiver_busy),
-    .failed(receiver_failed),
-    .output_channels(receiver_out)
+    .failed(receiver_failed)
 );
 
 always begin
@@ -62,8 +60,6 @@ initial begin
 
     while (receiver_busy)
         #5;
-
-    assert(sender_in == receiver_out);
 
     reset = 1'b0;
     force_hi = 8'h80;
