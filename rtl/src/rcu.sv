@@ -1,6 +1,9 @@
 `include "src/rcu_header.sv"
 
 module rcu#(
+    parameter int MESH_WIDTH  = 2,
+    parameter int MESH_HEIGHT = 2,
+    parameter int MESH_DEPTH  = 2,
     parameter position_t THIS_POS = '{x:'0, y:'0, z:'0}
 ) (
     input  port_t      inport,

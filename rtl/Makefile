@@ -16,8 +16,11 @@ elaborate:
 	xrun -f $(RUNFILE) -elaborate
 
 # Run simulation
-run: elaborate
+run: elaborate tb/rcu_tb.sv
 	xrun -f $(RUNFILE) -R
+
+tb/rcu_tb.sv: ../util/gen_rcu_tb.py
+	python3 $< > $@
 
 # Run with GUI
 run-gui: elaborate
@@ -25,3 +28,5 @@ run-gui: elaborate
 
 # Run simulation with clean build
 run-clean: clean compile run
+
+.PHONY: clean

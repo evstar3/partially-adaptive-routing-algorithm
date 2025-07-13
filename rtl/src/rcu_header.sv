@@ -1,10 +1,6 @@
 `ifndef RCU_HEADER
 `define RCU_HEADER
 
-parameter int MESH_WIDTH  = 4;
-parameter int MESH_HEIGHT = 4;
-parameter int MESH_DEPTH  = 2;
-
 typedef struct {
     logic [$clog2(MESH_WIDTH)-1:0] x;
     logic [$clog2(MESH_HEIGHT)-1:0] y;

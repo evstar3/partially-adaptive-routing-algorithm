@@ -1,5 +1,5 @@
 **/*.swp
-__pycache__
+**/__pycache__
 waves.shm
 xrun.key
 shuffle
@@ -8,3 +8,4 @@ tornado
 genout.txt
 archive
 .venv
+rcu_tb.sv

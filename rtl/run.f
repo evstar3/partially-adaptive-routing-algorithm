@@ -3,7 +3,7 @@ src/*.sv
 tb/*.sv
 
 # Top-level module
--top rcu
+-top rcu_tb
 
 # Simulation options
 # -access +rwc

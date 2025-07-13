@@ -124,7 +124,6 @@ class Channel:
         return f'{self.start}--{self.direction.name}:{self.vc}->{self.end()}'
 
 class Network:
-
     def __init__(self, width, height, depth, fault_rate=0.0, alg=0):
         self.width = width
         self.height = height
