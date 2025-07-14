@@ -10,7 +10,9 @@ def p_sys_fail_regular(x, y, z, pz):
 
 
 def p_sys_fail_adaptive(x, y, z, pz):
-    return 1 - mp.power(1 - (mp.power(pz, x) * (1 - mp.power(1 - mp.power(pz, x - 1), y))), z - 1)
+    p_layer_faulty = mp.power(pz, y) * (1 - mp.power(1 - mp.power(pz, x - 1), y))
+
+    return 1 - mp.power(1 - p_layer_faulty, z - 1)
 
 def main():
     parser = argparse.ArgumentParser()

@@ -3,6 +3,24 @@
 import argparse
 import random
 
+def regular_faulty(grid):
+    if any((any(row) for row in layer) for layer in grid):
+        return True
+
+    return False
+
+def adaptive_faulty(grid):
+    def layer_faulty(layer):
+        if not all(row[0] for row in layer):
+            return False
+
+        if not any(all(row) for row in layer):
+            return False
+
+        return True
+            
+    return any(layer_faulty(layer) for layer in grid)
+
 def main():
     parser = argparse.ArgumentParser()
 
@@ -20,15 +38,13 @@ def main():
 
 
     for _ in range(runs):
-        grid = [[[random.random() < pz for col in range(y)] for row in range(x)] for layer in range(z - 1)]
+        grid = [[[random.random() < pz for col in range(x)] for row in range(y)] for layer in range(z - 1)]
 
-        if any((any(row) for row in layer) for layer in grid):
+        if regular_faulty(grid):
             regular_count += 1
 
-        for layer in grid:
-            if all(row[0] for row in layer) and any(all(row) for row in layer):
-                adaptive_count += 1
-                break
+        if adaptive_faulty(grid):
+            adaptive_count += 1
 
     print(regular_count / runs)
     print(adaptive_count / runs)
