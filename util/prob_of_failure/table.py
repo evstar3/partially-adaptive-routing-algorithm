@@ -2,34 +2,33 @@
 
 import exact
 from mpmath import nstr
+from itertools import product
 
-sizes = [
+algs = {
+    'DOR': exact.p_fail_regular,
+    'FT-Z-OE': exact.p_fail_ftzoe,
+    'AFRA': exact.p_fail_afra,
+    'This work': exact.p_fail_adaptive
+}
+
+sizes = (
     (2, 2, 2),
     (4, 4, 2),
     (8, 8, 2),
     (4, 4, 4),
-    (8, 8, 4)
-]
+    (8, 8, 4),
+    (8, 8, 8),
+)
 
-pzs = [0.0000001, 0.000001, 0.00001, 0.0001, 0.001, 0.01, 0.1, 0.3]
+pzs = (0.001, 0.01, 0.1, 0.3)
 
-# Relative risk reduction
+print(f'''& {' & '.join(map(str, pzs))} \\cr''')
 for x, y, z in sizes:
-    for pz in pzs:
-        p_reg = exact.p_sys_fail_regular(x, y, z, pz)
-        p_adp = exact.p_sys_fail_adaptive(x, y, z, pz)
+    print(f'{x}x{y}x{z} \\cr')
+    for name, func in algs.items():
+        print(f'{name}', end=' & ')
+        print(' & '.join(nstr(func(x, y, z, pz), n=3) for pz in pzs), end='')
+        print(' \\cr')
 
-        rrr = (p_reg - p_adp) / p_reg
-        print(nstr(rrr, n=6), end=',')
-    print()
 
-# Parts per million saved
-for x, y, z in sizes:
-    for pz in pzs:
-        p_reg = exact.p_sys_fail_regular(x, y, z, pz)
-        p_adp = exact.p_sys_fail_adaptive(x, y, z, pz)
-
-        ppm_saved = int((p_reg - p_adp) * 1000000)
-        print(ppm_saved, end=',')
-    print()
 

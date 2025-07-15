@@ -2,12 +2,7 @@
 
 import argparse
 import random
-
-def regular_faulty(grid):
-    if any((any(row) for row in layer) for layer in grid):
-        return True
-
-    return False
+from exact import p_fail_adaptive
 
 def adaptive_faulty(grid):
     def layer_faulty(layer):
@@ -33,22 +28,16 @@ def main():
     x, y, z, pz = args.x, args.y, args.z, args.pz
 
     runs = 1000000
-    regular_count = 0
-    adaptive_count = 0
-
+    count = 0
 
     for _ in range(runs):
         grid = [[[random.random() < pz for col in range(x)] for row in range(y)] for layer in range(z - 1)]
 
-        if regular_faulty(grid):
-            regular_count += 1
-
         if adaptive_faulty(grid):
-            adaptive_count += 1
+            count += 1
 
-    print(regular_count / runs)
-    print(adaptive_count / runs)
-
+    print("Sim:  ", count / runs)
+    print("Exact:", p_fail_adaptive(x, y, z, pz))
 
 if __name__ == '__main__':
     main()
