@@ -61,6 +61,8 @@ initial begin
     while (receiver_busy)
         #5;
 
+    assert(~receiver_failed);
+
     reset = 1'b0;
     force_hi = 8'h80;
     force_lo = 8'h02;

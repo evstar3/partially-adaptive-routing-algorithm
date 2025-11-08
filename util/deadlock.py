@@ -13,9 +13,6 @@ class Graph:
         self.vertices = vertices
         self.edges = edges
 
-    def get_edge(edge):
-        return edge
-
     def find_cycle(self):
         cycles = []
         for root in self.vertices:
